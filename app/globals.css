@@ -3,28 +3,26 @@
 @theme inline {
   --font-sans: var(--font-geist);
   --font-mono: var(--font-mono);
-  --color-background: #081016;
-  --color-foreground: #e8edf0;
-  --color-card: #101b21;
-  --color-card-foreground: #e8edf0;
-  --color-muted: #18262d;
-  --color-muted-foreground: #8a9ba3;
-  --color-border: #26363e;
-  --color-primary: #d0a04a;
-  --color-primary-foreground: #16110a;
-  --color-accent: #4e9d8b;
-  --color-accent-foreground: #e8edf0;
+  --color-background: #100b1d;
+  --color-foreground: #f4efff;
+  --color-card: #191329;
+  --color-card-foreground: #f4efff;
+  --color-muted: #251b3b;
+  --color-muted-foreground: #a99abf;
+  --color-border: #3b2d59;
+  --color-primary: #a977ff;
+  --color-primary-foreground: #160d27;
+  --color-accent: #c9b3ff;
+  --color-accent-foreground: #160d27;
 }
 
 :root { color-scheme: dark; }
 * { border-color: var(--color-border); }
-body { min-height: 100vh; background: #081016; color: #e8edf0; font-family: var(--font-geist), sans-serif; }
+body { min-height: 100vh; background: #100b1d; color: #f4efff; font-family: var(--font-geist), sans-serif; }
 button { cursor: pointer; }
-::selection { background: #d0a04a; color: #16110a; }
-
-.grain { background-image: radial-gradient(rgba(255,255,255,.045) .6px, transparent .6px); background-size: 5px 5px; }
-.panel { background: linear-gradient(145deg, rgba(23,38,45,.92), rgba(10,19,24,.98)); box-shadow: 0 24px 60px rgba(0,0,0,.18); }
-
+::selection { background: #a977ff; color: #160d27; }
+.grain { background-image: radial-gradient(rgba(201,179,255,.06) .6px, transparent .6px); background-size: 5px 5px; }
+.panel { background: linear-gradient(145deg, rgba(31,23,49,.96), rgba(16,11,29,.98)); box-shadow: 0 24px 60px rgba(0,0,0,.2); }
 @media (prefers-reduced-motion: no-preference) {
   .rise { animation: rise .55s ease both; }
   .delay-1 { animation-delay: .08s; }
