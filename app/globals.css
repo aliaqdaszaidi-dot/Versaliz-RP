@@ -1,0 +1,33 @@
+@import 'tailwindcss';
+
+@theme inline {
+  --font-sans: var(--font-geist);
+  --font-mono: var(--font-mono);
+  --color-background: #081016;
+  --color-foreground: #e8edf0;
+  --color-card: #101b21;
+  --color-card-foreground: #e8edf0;
+  --color-muted: #18262d;
+  --color-muted-foreground: #8a9ba3;
+  --color-border: #26363e;
+  --color-primary: #d0a04a;
+  --color-primary-foreground: #16110a;
+  --color-accent: #4e9d8b;
+  --color-accent-foreground: #e8edf0;
+}
+
+:root { color-scheme: dark; }
+* { border-color: var(--color-border); }
+body { min-height: 100vh; background: #081016; color: #e8edf0; font-family: var(--font-geist), sans-serif; }
+button { cursor: pointer; }
+::selection { background: #d0a04a; color: #16110a; }
+
+.grain { background-image: radial-gradient(rgba(255,255,255,.045) .6px, transparent .6px); background-size: 5px 5px; }
+.panel { background: linear-gradient(145deg, rgba(23,38,45,.92), rgba(10,19,24,.98)); box-shadow: 0 24px 60px rgba(0,0,0,.18); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .rise { animation: rise .55s ease both; }
+  .delay-1 { animation-delay: .08s; }
+  .delay-2 { animation-delay: .16s; }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+}
