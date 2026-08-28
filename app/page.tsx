@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Activity, ArrowUpRight, BadgeAlert, Car, ChevronRight, Crosshair, Eye, LockKeyhole, Radio, Shield, Siren, Skull, UserPlus, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -21,17 +21,40 @@ export default function Home() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [message, setMessage] = useState('')
+  const [submitting, setSubmitting] = useState(false)
   const role = roles[activeRole]
+
+  useEffect(() => {
+    const authError = new URLSearchParams(window.location.search).get('auth_error')
+    if (authError) {
+      setAuthMode('login')
+      setMessage(authError)
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+  }, [])
   const Icon = role.icon
 
   async function submitAuth(event: React.FormEvent) {
-    event.preventDefault(); setMessage('')
-    const supabase = createClient()
-    const result = authMode === 'signup'
-      ? await supabase.auth.signUp({ email, password, options: { emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ?? `${window.location.origin}/auth/callback` } })
-      : await supabase.auth.signInWithPassword({ email, password })
-    if (result.error) setMessage(result.error.message.toLowerCase().includes('confirm') ? 'Check your email to confirm your account.' : 'Unable to continue. Check your details and try again.')
-    else setMessage(authMode === 'signup' ? 'Account created. Check your email to confirm access.' : 'Signed in. Welcome to Verosliz.')
+    event.preventDefault()
+    if (submitting) return
+    setMessage('')
+    setSubmitting(true)
+    try {
+      const supabase = createClient()
+      const result = authMode === 'signup'
+        ? await supabase.auth.signUp({ email, password, options: { emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ?? `${window.location.origin}/auth/callback` } })
+        : await supabase.auth.signInWithPassword({ email, password })
+      if (result.error) {
+        const detail = result.error.message.toLowerCase()
+        setMessage(detail.includes('confirm') ? 'Check your email to confirm your account.' : detail.includes('rate') ? 'Too many attempts. Please try again later.' : 'Unable to continue. Check your details and try again.')
+      } else {
+        setMessage(authMode === 'signup' ? 'Account created. Check your email to confirm access.' : 'Signed in. Welcome to Verosliz.')
+      }
+    } catch {
+      setMessage('The access service is unavailable. Please try again later.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return <main className="grain min-h-screen overflow-hidden"><div className="mx-auto flex min-h-screen max-w-[1440px] flex-col px-5 py-5 sm:px-8 lg:px-12">
@@ -44,6 +67,6 @@ export default function Home() {
     <section id="news" className="grid gap-5 border-t border-border/70 py-7 lg:grid-cols-[1fr_1.3fr]"><div className="panel border border-border p-6"><div className="flex items-center gap-3"><Icon size={22} className="text-primary" /><div><p className="font-mono text-[10px] uppercase tracking-[.2em] text-primary">Selected path</p><h3 className="mt-1 text-2xl font-semibold">{role.name}</h3></div></div><p className="mt-5 text-sm leading-6 text-muted-foreground">{role.description}</p><div className="mt-6 flex items-center justify-between border-t border-border pt-4"><span className="font-mono text-[10px] uppercase tracking-widest text-accent">Development role</span><button className="flex items-center gap-2 text-xs font-semibold text-primary hover:underline">{role.action}<ArrowUpRight size={14} /></button></div></div><div><div className="mb-4 flex items-center justify-between"><h3 className="text-lg font-semibold">City bulletin</h3><button className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground hover:text-primary">View all <ArrowUpRight className="ml-1 inline" size={12} /></button></div><div className="flex flex-col">{news.map(([tag, title, time]) => <article key={title} className="flex gap-4 border-b border-border py-4 first:border-t"><BadgeAlert size={17} className="mt-0.5 shrink-0 text-primary" /><div className="min-w-0"><div className="flex flex-wrap items-center gap-3"><span className="font-mono text-[9px] tracking-[.18em] text-accent">{tag}</span><span className="font-mono text-[9px] text-muted-foreground">{time}</span></div><p className="mt-1 text-sm text-foreground/90">{title}</p></div></article>)}</div></div></section>
     <footer className="mt-auto flex flex-col gap-2 border-t border-border/70 py-5 font-mono text-[9px] uppercase tracking-[.18em] text-muted-foreground sm:flex-row sm:items-center sm:justify-between"><span>© 2026 Verosliz Interactive</span><span className="flex items-center gap-2"><Eye size={12} className="text-primary" /> Built for roleplayers</span></footer>
   </div>
-  {authMode && <div className="fixed inset-0 z-10 flex items-center justify-center bg-background/85 p-5 backdrop-blur-sm"><div className="panel w-full max-w-md border border-primary/40 p-6 shadow-2xl"><div className="flex items-start justify-between"><div><p className="font-mono text-[10px] uppercase tracking-[.2em] text-primary">Verosliz access</p><h2 className="mt-2 text-2xl font-semibold">{authMode === 'login' ? 'Sign in to play' : 'Create your account'}</h2></div><button aria-label="Close" onClick={() => setAuthMode(null)} className="text-muted-foreground hover:text-foreground"><X size={18} /></button></div><form onSubmit={submitAuth} className="mt-6 flex flex-col gap-4"><label className="flex flex-col gap-2 text-xs text-muted-foreground">Email<input required type="email" value={email} onChange={e => setEmail(e.target.value)} className="border border-border bg-background px-3 py-3 text-foreground outline-none focus:border-primary" /></label><label className="flex flex-col gap-2 text-xs text-muted-foreground">Password<input required minLength={6} type="password" value={password} onChange={e => setPassword(e.target.value)} className="border border-border bg-background px-3 py-3 text-foreground outline-none focus:border-primary" /></label><button className="mt-2 bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground">{authMode === 'login' ? 'Sign in' : 'Create account'}</button></form>{message && <p className="mt-4 text-sm text-accent">{message}</p>}<button onClick={() => { setAuthMode(authMode === 'login' ? 'signup' : 'login'); setMessage('') }} className="mt-5 text-xs text-muted-foreground hover:text-primary">{authMode === 'login' ? 'Account creation not available?' : 'Already have an account? Sign in'}</button></div></div>}
+  {authMode && <div className="fixed inset-0 z-10 flex items-center justify-center bg-background/85 p-5 backdrop-blur-sm"><div className="panel w-full max-w-md border border-primary/40 p-6 shadow-2xl"><div className="flex items-start justify-between"><div><p className="font-mono text-[10px] uppercase tracking-[.2em] text-primary">Verosliz access</p><h2 className="mt-2 text-2xl font-semibold">{authMode === 'login' ? 'Sign in to play' : 'Create your account'}</h2></div><button aria-label="Close" onClick={() => setAuthMode(null)} className="text-muted-foreground hover:text-foreground"><X size={18} /></button></div><form onSubmit={submitAuth} className="mt-6 flex flex-col gap-4"><label className="flex flex-col gap-2 text-xs text-muted-foreground">Email<input required type="email" value={email} onChange={e => setEmail(e.target.value)} className="border border-border bg-background px-3 py-3 text-foreground outline-none focus:border-primary" /></label><label className="flex flex-col gap-2 text-xs text-muted-foreground">Password<input required minLength={6} type="password" value={password} onChange={e => setPassword(e.target.value)} className="border border-border bg-background px-3 py-3 text-foreground outline-none focus:border-primary" /></label><button disabled={submitting} className="mt-2 bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-60">{submitting ? 'Connecting…' : authMode === 'login' ? 'Sign in' : 'Create account'}</button></form>{message && <p className="mt-4 text-sm text-accent">{message}</p>}<button onClick={() => { setAuthMode(authMode === 'login' ? 'signup' : 'login'); setMessage('') }} className="mt-5 text-xs text-muted-foreground hover:text-primary">{authMode === 'login' ? 'Account creation not available?' : 'Already have an account? Sign in'}</button></div></div>}
   </main>
 }
